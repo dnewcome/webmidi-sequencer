@@ -62,19 +62,6 @@ function onMIDISuccess(midiAccess) {
 function onMIDIFailure(msg) {
   console.error(`Failed to get MIDI access - ${msg}`);
 }
-
-const start = () => {
-  setInterval(() => {
-    beat = (beat + 1) % 16;
-    update();
-    console.log("tick");
-    sendMiddleC(
-      midi,
-      "4BC23DFD90E633284BC0384FDE0364CC5CAED5A2B725F1FF78482AC46CA9CA6C",
-    );
-  }, 250);
-};
-
 navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
 
 function sendMiddleC(midiAccess, portID) {
@@ -82,7 +69,23 @@ function sendMiddleC(midiAccess, portID) {
   const noteOffMessage = [0x80, 60, 0x00]; // note off, middle C
   const output = midiAccess.outputs.get(portID);
   output.send(noteOnMessage); // sends the message.
+  setTimeout(()=>{
+        output.send(noteOffMessage)
+  }, 250);
 }
+
+const start = () => {
+  setInterval(() => {
+    beat = (beat + 1) % 16;
+    update();
+    sendMiddleC(
+      midi,
+      "4BC23DFD90E633284BC0384FDE0364CC5CAED5A2B725F1FF78482AC46CA9CA6C",
+    );
+  }, 1000);
+};
+
+
 
 function listInputsAndOutputs() {
   for (const entry of midi.inputs) {
