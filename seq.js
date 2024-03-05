@@ -11,6 +11,11 @@ let tracks = Array(grid_height)
     return Array(grid_width).fill(0);
   });
 
+c.width = grid_width * (stride);
+console.log(grid_width * (stride));
+c.height = grid_height * (stride);
+
+
 c.addEventListener("click", (event) => {
   // todo: use getComputedStyle
   // getBoundingClientRect does not account for borders
@@ -23,9 +28,12 @@ c.addEventListener("click", (event) => {
 let step = (x, y, v) => {
   let ctx = c.getContext("2d");
   ctx.strokeStyle = x == beat ? "red" : "black";
-  ctx.strokeRect(x * stride, y * stride, step_width, step_width);
+  ctx.lineWidth = 1;
+  // offset by one due to canvas rendering detail that line width lies
+  // in the center of stroke, so steps on edge look thin
+  ctx.strokeRect(x * stride + 1, y * stride + 1, step_width, step_width);
   if (v == 1) {
-    ctx.fillRect(x * stride, y * stride, step_width, step_width);
+    ctx.fillRect(x * stride + 1, y * stride + 1, step_width, step_width);
   }
 };
 
@@ -80,7 +88,7 @@ const start = () => {
     update();
     sendMiddleC(
       midi,
-      "4BC23DFD90E633284BC0384FDE0364CC5CAED5A2B725F1FF78482AC46CA9CA6C",
+      "4BC23DFD90E633284BC0384FDE0364CC5CAED5A2B725F1FF78482AC46CA9CA6C"
     );
   }, 1000);
 };
