@@ -2,9 +2,13 @@ const stride = 30;
 const step_width = 20;
 const c = document.querySelector("#grid");
 
-let grid_width = 16;
+let bpm = 120;
+let beat_length = 60000/120;
+let tick_length = beat_length/4;
+let grid_width = 36;
 let grid_height = 10;
 let beat = 0;
+
 let tracks = Array(grid_height)
   .fill()
   .map(() => {
@@ -45,7 +49,7 @@ const update = () => {
       step(j, i, v);
     });
   });
-  ctx.fillText(beat, c.width - 30, c.height - 30);
+  // ctx.fillText(beat, c.width - 8, c.height - 5);
 };
 
 // look up which tick is clicked on
@@ -58,8 +62,6 @@ const get_tick = (x, y) => {
   console.log(tracks[row][col]);
   update();
 };
-
-const play_beat = (n) => {};
 
 let midi = null; // global MIDIAccess object
 function onMIDISuccess(midiAccess) {
@@ -84,13 +86,13 @@ function sendMiddleC(midiAccess, portID) {
 
 const start = () => {
   setInterval(() => {
-    beat = (beat + 1) % 16;
     update();
     sendMiddleC(
       midi,
       "4BC23DFD90E633284BC0384FDE0364CC5CAED5A2B725F1FF78482AC46CA9CA6C"
     );
-  }, 1000);
+    beat = (beat + 1) % grid_width;
+  }, tick_length);
 };
 
 
