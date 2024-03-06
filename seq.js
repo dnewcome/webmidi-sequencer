@@ -6,25 +6,25 @@ const midi_root_note = 60;
 const gate_time = 200;
 
 let bpm = 120;
-let beat_length = 60000/120;
-let tick_length = beat_length/4;
+let beat_length = 60000 / 120;
+let tick_length = beat_length / 4;
 let grid_width = 16;
 let grid_height = 6;
 let beat = 0;
 
-let note_values = Array(grid_height).fill().map((v,i)=>{
+let note_values = Array(grid_height)
+  .fill()
+  .map((v, i) => {
     return midi_root_note + i;
-});
+  });
 
 note_values.map((item, i) => {
   let el = document.createElement("input");
   el.size = 3;
   el.value = item;
-  document.querySelector("#note-values").appendChild(
-	  el
-  );
-  el.addEventListener("change", (e)=>{
-     note_values[i] = parseInt(e.target.value);
+  document.querySelector("#note-values").appendChild(el);
+  el.addEventListener("change", (e) => {
+    note_values[i] = parseInt(e.target.value);
   });
 });
 
@@ -34,15 +34,15 @@ let tracks = Array(grid_height)
     return Array(grid_width).fill(0);
   });
 
-c.width = grid_width * (stride);
-c.height = grid_height * (stride);
+c.width = grid_width * stride;
+c.height = grid_height * stride;
 
 // wire up event handlers for midi note inputs
-Array.from(track_notes).map((item, i)=>{
-    item.value = i + midi_root_note;
-    item.addEventListener("change", (e)=>{
-	note_values[i] = parseInt(e.target.value);
-    });
+Array.from(track_notes).map((item, i) => {
+  item.value = i + midi_root_note;
+  item.addEventListener("change", (e) => {
+    note_values[i] = parseInt(e.target.value);
+  });
 });
 
 // wire up click handlers for enabling/disabling ticks in the grid
@@ -60,9 +60,9 @@ c.addEventListener("click", (event) => {
 let step = (x, y, v) => {
   let ctx = c.getContext("2d");
   ctx.strokeStyle = x == beat ? "red" : "black";
-	if(x == beat && v != 0) {
-	      playNote(note_values[y]);
-	}
+  if (x == beat && v != 0) {
+    playNote(note_values[y]);
+  }
   ctx.lineWidth = 1;
   // offset by one due to canvas rendering detail that line width lies
   // in the center of stroke, so steps on edge look thin
@@ -73,14 +73,14 @@ let step = (x, y, v) => {
 };
 
 const playNote = (n) => {
-    sendNote(
-      midi,
-      "4BC23DFD90E633284BC0384FDE0364CC5CAED5A2B725F1FF78482AC46CA9CA6C",
-      n
-    );
-}
+  sendNote(
+    midi,
+    "4BC23DFD90E633284BC0384FDE0364CC5CAED5A2B725F1FF78482AC46CA9CA6C",
+    n,
+  );
+};
 
-// redraw the scren 
+// redraw the scren
 const update = () => {
   let ctx = c.getContext("2d");
   ctx.clearRect(0, 0, c.width, c.height);
@@ -118,9 +118,9 @@ function sendNote(midiAccess, portID, n) {
   const output = midiAccess.outputs.get(portID);
   output.send(noteOnMessage); // sends the message.
   console.log(`note on ${n}`);
-  setTimeout(()=>{
-	console.log(`note off ${n}`);
-        output.send(noteOffMessage)
+  setTimeout(() => {
+    console.log(`note off ${n}`);
+    output.send(noteOffMessage);
   }, gate_time);
 }
 
