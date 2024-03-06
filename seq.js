@@ -1,13 +1,19 @@
 const stride = 30;
 const step_width = 20;
 const c = document.querySelector("#grid");
+const track_notes = document.querySelectorAll("input");
+const midi_root_note = 60;
 
 let bpm = 120;
 let beat_length = 60000/120;
 let tick_length = beat_length/4;
 let grid_width = 36;
-let grid_height = 10;
+let grid_height = 8;
 let beat = 0;
+
+let note_values = Array(grid_height).fill().map((v,i)=>{
+    return midi_root_note + i;
+});
 
 let tracks = Array(grid_height)
   .fill()
@@ -16,22 +22,34 @@ let tracks = Array(grid_height)
   });
 
 c.width = grid_width * (stride);
-console.log(grid_width * (stride));
 c.height = grid_height * (stride);
 
+// wire up event handlers for midi note inputs
+Array.from(track_notes).map((item, i)=>{
+    item.value = i + midi_root_note;
+    item.addEventListener("change", (e)=>{
+	note_values[i] = parseInt(e.target.value);
+    });
+});
 
+// wire up click handlers for enabling/disabling ticks in the grid
 c.addEventListener("click", (event) => {
+  console.log("click");
   // todo: use getComputedStyle
   // getBoundingClientRect does not account for borders
   const bb = c.getBoundingClientRect();
   const x = Math.floor(((event.clientX - bb.left) / bb.width) * c.width);
   const y = Math.floor(((event.clientY - bb.top) / bb.height) * c.height);
-  console.log(get_tick(x, y));
+  get_tick(x, y);
 });
 
+// draw a sequencer step button in the UI
 let step = (x, y, v) => {
   let ctx = c.getContext("2d");
   ctx.strokeStyle = x == beat ? "red" : "black";
+	if(x == beat && v != 0) {
+	      playNote(note_values[y]);
+	}
   ctx.lineWidth = 1;
   // offset by one due to canvas rendering detail that line width lies
   // in the center of stroke, so steps on edge look thin
@@ -41,6 +59,15 @@ let step = (x, y, v) => {
   }
 };
 
+const playNote = (n) => {
+    sendNote(
+      midi,
+      "4BC23DFD90E633284BC0384FDE0364CC5CAED5A2B725F1FF78482AC46CA9CA6C",
+      n
+    );
+}
+
+// redraw the scren 
 const update = () => {
   let ctx = c.getContext("2d");
   ctx.clearRect(0, 0, c.width, c.height);
@@ -57,9 +84,7 @@ const get_tick = (x, y) => {
   // todo: account for slack space between ticks
   row = Math.floor(y / stride);
   col = Math.floor(x / stride);
-  console.log(row, col);
   tracks[row][col] = Math.abs(tracks[row][col] - 1);
-  console.log(tracks[row][col]);
   update();
 };
 
@@ -74,11 +99,12 @@ function onMIDIFailure(msg) {
 }
 navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
 
-function sendMiddleC(midiAccess, portID) {
-  const noteOnMessage = [0x90, 60, 0x7f]; // note on, middle C, full velocity
-  const noteOffMessage = [0x80, 60, 0x00]; // note off, middle C
+function sendNote(midiAccess, portID, n) {
+  const noteOnMessage = [0x90, n, 0x7f]; // note on, middle C, full velocity
+  const noteOffMessage = [0x80, n, 0x00]; // note off, middle C
   const output = midiAccess.outputs.get(portID);
   output.send(noteOnMessage); // sends the message.
+  console.log(`note on ${n}`);
   setTimeout(()=>{
         output.send(noteOffMessage)
   }, 250);
@@ -87,10 +113,6 @@ function sendMiddleC(midiAccess, portID) {
 const start = () => {
   setInterval(() => {
     update();
-    sendMiddleC(
-      midi,
-      "4BC23DFD90E633284BC0384FDE0364CC5CAED5A2B725F1FF78482AC46CA9CA6C"
-    );
     beat = (beat + 1) % grid_width;
   }, tick_length);
 };
