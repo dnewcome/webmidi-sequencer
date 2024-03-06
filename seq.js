@@ -14,15 +14,14 @@ let grid_width = 16;
 let grid_height = 6;
 let beat = 0;
 
-document.addEventListener("keypress", (e)=>{
-	if(e.keyCode == 32 && !running) {
-		running = !running;
-		start(); 
-	}
-	else if(e.keyCode == 32 && running) {
-		running = !running;
-		stop();
-	}
+document.addEventListener("keypress", (e) => {
+  if (e.keyCode == 32 && !running) {
+    running = !running;
+    start();
+  } else if (e.keyCode == 32 && running) {
+    running = !running;
+    stop();
+  }
 });
 
 let note_values = Array(grid_height)
@@ -137,7 +136,6 @@ function sendNote(midiAccess, portID, n) {
   }, gate_time);
 }
 
-
 const start = () => {
   tick_interval = setInterval(() => {
     update();
@@ -146,12 +144,12 @@ const start = () => {
 };
 
 const stop = () => {
-	if(tick_interval)  {
-		clearInterval(tick_interval);
-	}   
-		beat = 0;
-		update();
-}
+  if (tick_interval) {
+    clearInterval(tick_interval);
+  }
+  beat = 0;
+  update();
+};
 
 function listInputsAndOutputs() {
   for (const entry of midi.inputs) {
