@@ -5,12 +5,25 @@ const track_notes = document.querySelectorAll("input");
 const midi_root_note = 60;
 const gate_time = 200;
 
+let running = false;
+let tick_interval = null;
 let bpm = 120;
 let beat_length = 60000 / 120;
 let tick_length = beat_length / 4;
 let grid_width = 16;
 let grid_height = 6;
 let beat = 0;
+
+document.addEventListener("keypress", (e)=>{
+	if(e.keyCode == 32 && !running) {
+		running = !running;
+		start(); 
+	}
+	else if(e.keyCode == 32 && running) {
+		running = !running;
+		stop();
+	}
+});
 
 let note_values = Array(grid_height)
   .fill()
@@ -124,12 +137,21 @@ function sendNote(midiAccess, portID, n) {
   }, gate_time);
 }
 
+
 const start = () => {
-  setInterval(() => {
+  tick_interval = setInterval(() => {
     update();
     beat = (beat + 1) % grid_width;
   }, tick_length);
 };
+
+const stop = () => {
+	if(tick_interval)  {
+		clearInterval(tick_interval);
+	}   
+		beat = 0;
+		update();
+}
 
 function listInputsAndOutputs() {
   for (const entry of midi.inputs) {
@@ -150,5 +172,4 @@ function listInputsAndOutputs() {
     );
   }
 }
-
-start();
+update();
