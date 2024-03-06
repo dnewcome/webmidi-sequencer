@@ -3,16 +3,29 @@ const step_width = 20;
 const c = document.querySelector("#grid");
 const track_notes = document.querySelectorAll("input");
 const midi_root_note = 60;
+const gate_time = 200;
 
 let bpm = 120;
 let beat_length = 60000/120;
 let tick_length = beat_length/4;
-let grid_width = 36;
-let grid_height = 8;
+let grid_width = 16;
+let grid_height = 6;
 let beat = 0;
 
 let note_values = Array(grid_height).fill().map((v,i)=>{
     return midi_root_note + i;
+});
+
+note_values.map((item, i) => {
+  let el = document.createElement("input");
+  el.size = 3;
+  el.value = item;
+  document.querySelector("#note-values").appendChild(
+	  el
+  );
+  el.addEventListener("change", (e)=>{
+     note_values[i] = parseInt(e.target.value);
+  });
 });
 
 let tracks = Array(grid_height)
@@ -106,8 +119,9 @@ function sendNote(midiAccess, portID, n) {
   output.send(noteOnMessage); // sends the message.
   console.log(`note on ${n}`);
   setTimeout(()=>{
+	console.log(`note off ${n}`);
         output.send(noteOffMessage)
-  }, 250);
+  }, gate_time);
 }
 
 const start = () => {
@@ -116,8 +130,6 @@ const start = () => {
     beat = (beat + 1) % grid_width;
   }, tick_length);
 };
-
-
 
 function listInputsAndOutputs() {
   for (const entry of midi.inputs) {
